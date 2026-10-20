@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAHYMBERDI — Architecture & Spatial Design</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Inter:wght@200;300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Alpine.js for UI Interactions -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        archGold: '#C5A880',
+                        archGoldHover: '#d4b992',
+                        archDark: '#0B0C0E',
+                        archCardDark: '#14161A',
+                        archBorderDark: '#232730',
+                        terracotta: '#C86D51',
+                        sandstone: '#E8D8C8'
+                    },
+                    fontFamily: {
+                        serif: ['Cinzel', 'serif'],
+                        sans: ['Inter', 'Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .font-cinzel {
+            font-family: 'Cinzel', serif;
+        }
+        
+        .arch-grid-pattern {
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(197, 168, 128, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(197, 168, 128, 0.04) 1px, transparent 1px);
+        }
+        .blueprint-mode {
+            background-size: 20px 20px;
+            background-image: 
+                linear-gradient(to right, rgba(59, 130, 246, 0.15) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(59, 130, 246, 0.15) 1px, transparent 1px) !important;
+            background-color: #0d1b2a !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0C0E;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #232730;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #C5A880;
+        }
+    </style>
+</head>
+
+<body x-data="archStudioApp()" 
+      :class="{ 'dark': darkMode, 'light bg-stone-50 text-stone-800': !darkMode, 'bg-archDark text-stone-200': darkMode, 'blueprint-mode': blueprintMode }" 
+      class="min-h-screen relative overflow-x-hidden antialiased arch-grid-pattern selection:bg-archGold selection:text-black">
+
+    <div class="relative z-10 flex flex-col min-h-screen">
+
+        <!-- HEADER / NAVIGATION -->
+        <header class="sticky top-0 z-40 w-full transition-all duration-300 border-b"
+                :class="darkMode ? 'bg-archDark/90 border-archBorderDark backdrop-blur-md' : 'bg-white/90 border-stone-200 backdrop-blur-md'">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                
+                <!-- Logo -->
+                <a href="#" class="flex items-center space-x-3 group">
+                    <div class="w-10 h-10 border border-archGold/60 flex items-center justify-center transition-transform duration-300 group-hover:rotate-45">
+                        <span class="font-cinzel font-bold text-archGold text-lg group-hover:-rotate-45 transition-transform duration-300">R</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="font-cinzel tracking-widest text-xl font-extrabold uppercase text-archGold">RAHYMBERDI</span>
+                        <span class="text-[9px] tracking-[0.3em] uppercase text-stone-400 font-medium" x-text="t('studioTag')">Architect & Spatial Designer</span>
+                    </div>
+                </a>
+
+                <!-- Navigation Links -->
+                <nav class="hidden md:flex items-center space-x-8 text-xs font-semibold uppercase tracking-widest">
+                    <a href="#about" class="hover:text-archGold transition-colors duration-200" x-text="t('navAbout')">О студии</a>
+                    <a href="#portfolio" class="hover:text-archGold transition-colors duration-200" x-text="t('navPortfolio')">Проекты</a>
+                    <a href="#services" class="hover:text-archGold transition-colors duration-200" x-text="t('navServices')">Услуги</a>
+                    <a href="#calculator" class="hover:text-archGold transition-colors duration-200" x-text="t('navCalculator')">Расчет стоимости</a>
+                    <a href="#contact" class="hover:text-archGold transition-colors duration-200" x-text="t('navContact')">Контакты</a>
+                </nav>
+
+                <!-- Actions -->
+                <div class="flex items-center space-x-3">
+                    
+                    <!-- Language Switcher (RU / EN) -->
+                    <div class="flex items-center border border-archBorderDark rounded overflow-hidden p-0.5 text-xs font-mono">
+                        <button @click="lang = 'ru'" 
+                                class="px-2 py-1 font-bold transition-all duration-200"
+                                :class="lang === 'ru' ? 'bg-archGold text-archDark' : 'text-stone-400 hover:text-stone-200'">
+                            RU
+                        </button>
+                        <button @click="lang = 'en'" 
+                                class="px-2 py-1 font-bold transition-all duration-200"
+                                :class="lang === 'en' ? 'bg-archGold text-archDark' : 'text-stone-400 hover:text-stone-200'">
+                            EN
+                        </button>
+                    </div>
+
+                    <!-- Blueprint Mode Toggle -->
+                    <button @click="blueprintMode = !blueprintMode" 
+                            class="p-2 rounded border text-xs tracking-widest transition-all duration-200"
+                            :class="blueprintMode ? 'border-blue-400 bg-blue-900/50 text-blue-300' : 'border-archBorderDark text-stone-400 hover:text-archGold'"
+                            :title="lang === 'ru' ? 'Чертежный режим (Blueprint)' : 'Blueprint Mode'">
+                        <i class="fa-solid fa-compass-drafting text-sm"></i>
+                    </button>
+
+                    <!-- Theme Toggle -->
+                    <button @click="darkMode = !darkMode" 
+                            class="p-2 rounded border transition-all duration-200"
+                            :class="darkMode ? 'border-archBorderDark bg-archCardDark text-archGold' : 'border-stone-300 bg-stone-100 text-stone-800'"
+                            :title="lang === 'ru' ? 'Переключить тему' : 'Toggle Theme'">
+                        <i class="fa-solid" :class="darkMode ? 'fa-sun' : 'fa-moon'"></i>
+                    </button>
+
+                    <!-- Mobile Menu Button -->
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                            class="md:hidden p-2 rounded border text-stone-400"
+                            :class="darkMode ? 'border-archBorderDark bg-archCardDark' : 'border-stone-200 bg-stone-100'">
+                        <i class="fa-solid" :class="mobileMenuOpen ? 'fa-xmark' : 'fa-bars'"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Nav Dropdown -->
+            <div x-show="mobileMenuOpen" 
+                 x-transition 
+                 class="md:hidden border-b px-6 py-6 space-y-4 font-cinzel text-sm tracking-wider uppercase"
+                 :class="darkMode ? 'bg-archDark border-archBorderDark' : 'bg-white border-stone-200'">
+                <a @click="mobileMenuOpen = false" href="#about" class="block hover:text-archGold" x-text="t('navAbout')">О студии</a>
+                <a @click="mobileMenuOpen = false" href="#portfolio" class="block hover:text-archGold" x-text="t('navPortfolio')">Проекты</a>
+                <a @click="mobileMenuOpen = false" href="#services" class="block hover:text-archGold" x-text="t('navServices')">Услуги</a>
+                <a @click="mobileMenuOpen = false" href="#calculator" class="block hover:text-archGold" x-text="t('navCalculator')">Расчет стоимости</a>
+                <a @click="mobileMenuOpen = false" href="#contact" class="block hover:text-archGold" x-text="t('navContact')">Контакты</a>
+            </div>
+        </header>
+
+        <!-- HERO SECTION -->
+        <section class="relative py-24 lg:py-36 px-4 overflow-hidden flex items-center justify-center min-h-[90vh]">
+            <div class="absolute inset-0 z-0 opacity-25 pointer-events-none overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2000&q=80" 
+                     alt="Modern Architecture" 
+                     class="w-full h-full object-cover object-center filter grayscale contrast-125">
+                <div class="absolute inset-0 bg-gradient-to-b" :class="darkMode ? 'from-archDark/80 via-archDark/95 to-archDark' : 'from-stone-50/80 via-stone-50/95 to-stone-50'"></div>
+            </div>
+
+            <div class="max-w-6xl mx-auto text-center relative z-10 space-y-8">
+                <div class="inline-flex items-center space-x-3 px-4 py-1.5 border border-archGold/40 bg-archGold/5 text-archGold text-xs font-medium tracking-[0.25em] uppercase">
+                    <span class="w-1.5 h-1.5 bg-archGold animate-ping"></span>
+                    <span x-text="t('heroBadge')">Архитектура & Дизайн Пространств</span>
+                </div>
+
+                <h1 class="font-cinzel text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight uppercase" x-html="t('heroTitle')">
+                    Проектируем Монументальную Эстетику & Чистый Уют
+                </h1>
+
+                <p class="max-w-3xl mx-auto text-sm sm:text-base md:text-lg text-stone-400 font-light leading-relaxed tracking-wide" x-text="t('heroSubtitle')">
+                    Создание премиальной жилой и коммерческой архитектуры, индивидуальных вилл и вневременных интерьеров. От концепта и 3D-визуализации до реализации с авторским надзором.
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
+                    <a href="#portfolio" 
+                       class="w-full sm:w-auto px-8 py-4 font-semibold text-xs uppercase tracking-[0.2em] text-archDark bg-archGold hover:bg-archGoldHover transition-all duration-300 shadow-xl flex items-center justify-center space-x-3">
+                        <span x-text="t('btnPortfolio')">Смотреть Портфолио</span>
+                        <i class="fa-solid fa-arrow-right-long text-xs"></i>
+                    </a>
+                    <a href="#contact" 
+                       class="w-full sm:w-auto px-8 py-4 font-semibold text-xs uppercase tracking-[0.2em] border border-archBorderDark hover:border-archGold transition-all duration-300 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-ruler-combined text-archGold text-xs"></i>
+                        <span x-text="t('btnDiscuss')">Обсудить Проект</span>
+                    </a>
+                </div>
+
+                <div class="pt-16 grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-archBorderDark max-w-4xl mx-auto">
+                    <template x-for="(stat, idx) in t('heroStats')" :key="idx">
+                        <div class="space-y-1">
+                            <div class="font-cinzel text-2xl sm:text-3xl font-extrabold text-archGold" x-text="stat.value"></div>
+                            <div class="text-[11px] uppercase tracking-wider text-stone-400" x-text="stat.label"></div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT & PHILOSOPHY -->
+        <section id="about" class="py-24 border-t transition-colors duration-300" :class="darkMode ? 'border-archBorderDark bg-archDark' : 'border-stone-200 bg-white'">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <div class="lg:col-span-5 relative group">
+                        <div class="absolute -inset-2 border border-archGold/30 transform translate-x-3 translate-y-3 pointer-events-none"></div>
+                        <div class="relative overflow-hidden border border-archBorderDark bg-archCardDark">
+                            <img src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=800&q=80" 
+                                 alt="Architect Rahymberdi" 
+                                 class="w-full h-[500px] object-cover filter grayscale contrast-110 transition-transform duration-700 group-hover:scale-105">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent flex items-end p-6">
+                                <div>
+                                    <p class="text-archGold font-cinzel text-xs uppercase tracking-widest" x-text="t('architectName')">Рахымберди Чарыев</p>
+                                    <p class="text-stone-300 text-xs font-light mt-1" x-text="t('architectRole')">Главный Архитектор & Основатель Студии</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="inline-block text-archGold font-semibold text-xs tracking-[0.25em] uppercase" x-text="t('aboutLabel')">Архитектурный Подход</div>
+                        <h2 class="text-2xl sm:text-4xl font-cinzel font-bold leading-tight uppercase" x-text="t('aboutHeading')">Синтез геометрии, естественного света и натуральных материалов</h2>
+                        <p class="text-stone-400 text-sm sm:text-base leading-relaxed font-light" x-text="t('aboutDesc')">
+                            Мы верим, что архитектура должна органично взаимодействовать с окружающей средой, отражая характер и статус владельца. Каждое пространственное решение основывается на пропорциях, эргономике и чистоте линий.
+                        </p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
+                            <template x-for="(pillar, idx) in t('aboutPillars')" :key="idx">
+                                <div class="p-4 border border-archBorderDark bg-archCardDark/40 flex items-start space-x-3">
+                                    <i class="fa-solid fa-cube text-archGold text-sm mt-1"></i>
+                                    <div>
+                                        <h4 class="text-xs font-bold uppercase tracking-wider text-stone-200" x-text="pillar.title"></h4>
+                                        <p class="text-xs text-stone-400 mt-1 font-light" x-text="pillar.desc"></p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="p-4 border-l-2 border-archGold bg-archGold/5 text-stone-300 font-cinzel italic text-sm" x-html="'&ldquo;' + t('aboutQuote') + '&rdquo;'">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PORTFOLIO -->
+        <section id="portfolio" class="py-24 border-t transition-colors duration-300" :class="darkMode ? 'border-archBorderDark bg-archCardDark/30' : 'border-stone-200 bg-stone-100'">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto space-y-4 mb-12">
+                    <span class="text-archGold font-semibold text-xs tracking-[0.25em] uppercase" x-text="t('portfolioTag')">Архитектурное Портфолио</span>
+                    <h2 class="text-2xl sm:text-4xl font-cinzel font-bold uppercase" x-text="t('portfolioHeading')">Избранные Реализованные Объекты</h2>
+                    <p class="text-stone-400 text-xs sm:text-sm font-light" x-text="t('portfolioSub')">Виллы, резиденции, премиальные квартиры и коммерческие пространства.</p>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-2 mb-12">
+                    <template x-for="cat in portfolioCategories" :key="cat">
+                        <button @click="activeCategory = cat"
+                                class="px-5 py-2.5 text-xs font-medium uppercase tracking-wider transition-all duration-200 border"
+                                :class="activeCategory === cat 
+                                    ? 'bg-archGold text-archDark border-archGold font-bold shadow-lg' 
+                                    : 'border-archBorderDark text-stone-400 hover:border-archGold hover:text-archGold'">
+                            <span x-text="getCategoryLabel(cat)"></span>
+                        </button>
+                    </template>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <template x-for="(item, index) in filteredPortfolio" :key="index">
+                        <div class="group border border-archBorderDark bg-archDark overflow-hidden flex flex-col justify-between transition-all duration-500 hover:border-archGold/60">
+                            <div class="relative h-72 overflow-hidden cursor-pointer" @click="openModal(item)">
+                                <img :src="item.image" 
+                                     :alt="item.title[lang]"
+                                     class="w-full h-full object-cover filter contrast-105 transition-transform duration-700 group-hover:scale-105">
+                                <div class="absolute inset-0 bg-gradient-to-t from-archDark via-transparent to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-300"></div>
+                                
+                                <span class="absolute top-4 left-4 px-3 py-1 bg-archDark/90 text-archGold border border-archGold/30 text-[10px] font-mono tracking-widest uppercase"
+                                      x-text="item.category[lang]"></span>
+
+                                <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    <div class="w-10 h-10 border border-archGold bg-archDark text-archGold flex items-center justify-center">
+                                        <i class="fa-solid fa-expand text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-6 space-y-4 flex-1 flex flex-col justify-between">
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between text-[11px] text-archGold font-mono">
+                                        <span x-text="item.location[lang]"></span>
+                                        <span x-text="item.area + ' ' + t('sqm')"></span>
+                                    </div>
+                                    <h3 class="font-cinzel text-lg font-bold text-stone-100 group-hover:text-archGold transition-colors" x-text="item.title[lang]"></h3>
+                                    <p class="text-xs text-stone-400 font-light line-clamp-2 leading-relaxed" x-text="item.description[lang]"></p>
+                                </div>
+
+                                <div class="pt-4 border-t border-archBorderDark flex items-center justify-between text-xs">
+                                    <span class="text-stone-500 font-mono" x-text="item.year"></span>
+                                    <button @click="openModal(item)" class="text-archGold hover:underline font-semibold uppercase tracking-wider text-[11px] flex items-center space-x-1">
+                                        <span x-text="t('btnDetails')">Детали Проекта</span>
+                                        <i class="fa-solid fa-chevron-right text-[9px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </section>
+
+        <!-- SERVICES -->
+        <section id="services" class="py-24 border-t transition-colors duration-300" :class="darkMode ? 'border-archBorderDark bg-archDark' : 'border-stone-200 bg-white'">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto space-y-4 mb-16">
+                    <span class="text-archGold font-semibold text-xs tracking-[0.25em] uppercase" x-text="t('servicesTag')">Наши Компетенции</span>
+                    <h2 class="text-2xl sm:text-4xl font-cinzel font-bold uppercase" x-text="t('servicesHeading')">Полный Цикл Архитектурного Проектирования</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <template x-for="(service, idx) in t('serviceItems')" :key="idx">
+                        <div class="p-8 border border-archBorderDark bg-archCardDark/50 hover:border-archGold transition-all duration-300 flex flex-col justify-between space-y-6 group">
+                            <div class="space-y-4">
+                                <div class="w-12 h-12 border border-archGold/40 flex items-center justify-center text-archGold text-xl group-hover:bg-archGold group-hover:text-archDark transition-all duration-300">
+                                    <i :class="service.icon"></i>
+                                </div>
+                                <h3 class="font-cinzel text-xl font-bold uppercase" x-text="service.title"></h3>
+                                <p class="text-xs text-stone-400 font-light leading-relaxed" x-text="service.desc"></p>
+                            </div>
+                            <div class="text-[11px] font-mono text-archGold font-semibold uppercase tracking-wider" x-text="service.price"></div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </section>
+
+        <!-- BUDGET CALCULATOR -->
+        <section id="calculator" class="py-24 border-t transition-colors duration-300" :class="darkMode ? 'border-archBorderDark bg-archCardDark/40' : 'border-stone-200 bg-stone-100'">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center space-y-4 mb-12">
+                    <span class="text-archGold font-semibold text-xs tracking-[0.25em] uppercase" x-text="t('calcTag')">Онлайн Расчет</span>
+                    <h2 class="text-2xl sm:text-4xl font-cinzel font-bold uppercase" x-text="t('calcHeading')">Калькулятор Архитектурного Бюджета</h2>
+                    <p class="text-stone-400 text-xs sm:text-sm font-light" x-text="t('calcSub')">Рассчитайте примерную стоимость и сроки разработки вашего объекта.</p>
+                </div>
+
+                <div class="p-8 border border-archBorderDark bg-archDark shadow-2xl space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        
+                        <!-- Area Slider -->
+                        <div class="space-y-3">
+                            <label class="text-xs font-bold uppercase tracking-wider text-stone-300 flex justify-between">
+                                <span x-text="t('calcAreaLabel')">Площадь объекта:</span>
+                                <span class="text-archGold font-mono text-sm" x-text="calcArea + ' ' + t('sqm')"></span>
+                            </label>
+                            <input type="range" min="50" max="2000" step="10" x-model="calcArea" class="w-full accent-archGold">
+                            <div class="flex justify-between text-[10px] text-stone-500 font-mono">
+                                <span>50 м²</span>
+                                <span>2000 м²</span>
+                            </div>
+                        </div>
+
+                        <!-- Package Selection -->
+                        <div class="space-y-3">
+                            <label class="text-xs font-bold uppercase tracking-wider text-stone-300" x-text="t('calcPackageLabel')">Уровень проектирования:</label>
+                            <select x-model="calcPackage" class="w-full bg-archCardDark border border-archBorderDark p-3 text-xs text-stone-200 focus:border-archGold outline-none">
+                                <option value="architectural" x-text="t('pkgArch')">Архитектурное решение (Эскизный проект)</option>
+                                <option value="interior" x-text="t('pkgInt')">Дизайн-проект интерьера</option>
+                                <option value="full" x-text="t('pkgFull')">Комплексный проект (Архитектура + Интерьер)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-archBorderDark grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                        <div>
+                            <span class="text-[10px] text-stone-400 uppercase tracking-widest block" x-text="t('calcEstCost')">Предварительная стоимость</span>
+                            <div class="font-cinzel text-3xl font-extrabold text-archGold mt-1 font-mono" x-text="'$' + calculatedPrice"></div>
+                            <span class="text-[10px] text-stone-500" x-text="t('calcNote')">*Окончательная смета формируется после ТЗ</span>
+                        </div>
+                        <a href="#contact" class="w-full px-6 py-4 bg-archGold text-archDark text-center font-bold text-xs uppercase tracking-widest hover:bg-archGoldHover transition-colors">
+                            <span x-text="t('calcBtnOrder')">Заказать точный расчет</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact" class="py-24 border-t transition-colors duration-300" :class="darkMode ? 'border-archBorderDark bg-archDark' : 'border-stone-200 bg-white'">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                    
+                    <div class="lg:col-span-5 space-y-8">
+                        <div class="space-y-4">
+                            <span class="text-archGold font-semibold text-xs tracking-[0.25em] uppercase" x-text="t('contactTag')">Связаться с нами</span>
+                            <h2 class="text-2xl sm:text-4xl font-cinzel font-bold uppercase" x-text="t('contactHeading')">Обсудим ваш будущий объект</h2>
+                            <p class="text-stone-400 text-xs sm:text-sm font-light leading-relaxed" x-text="t('contactDesc')">
+                                Готовы воплотить архитектурные идеи любой сложности. Запишитесь на консультацию или отправьте техническое задание.
+                            </p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="flex items-start space-x-4">
+                                <div class="w-10 h-10 border border-archGold/40 flex items-center justify-center text-archGold shrink-0">
+                                    <i class="fa-solid fa-envelope text-sm"></i>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-stone-500 uppercase tracking-wider block" x-text="t('emailLabel')">Электронная почта</span>
+                                    <a href="mailto:charyyevrahymberdi@gmail.com" class="text-sm font-semibold hover:text-archGold transition-colors">charyyevrahymberdi@gmail.com</a>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-4">
+                                <div class="w-10 h-10 border border-archGold/40 flex items-center justify-center text-archGold shrink-0">
+                                    <i class="fa-solid fa-phone text-sm"></i>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-stone-500 uppercase tracking-wider block" x-text="t('phoneLabel')">Телефон / WhatsApp / Telegram</span>
+                                    <a href="tel:+99362457770" class="text-sm font-semibold hover:text-archGold transition-colors">+993 62 457770</a>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-4">
+                                <div class="w-10 h-10 border border-archGold/40 flex items-center justify-center text-archGold shrink-0">
+                                    <i class="fa-solid fa-location-dot text-sm"></i>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] text-stone-500 uppercase tracking-wider block" x-text="t('locLabel')">Локация</span>
+                                    <span class="text-sm font-medium text-stone-300">Ашхабад, Туркменистан</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Form -->
+                    <div class="lg:col-span-7 p-8 border border-archBorderDark bg-archCardDark">
+                        <form @submit.prevent="submitForm()" class="space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label class="text-[11px] font-bold uppercase tracking-wider text-stone-300" x-text="t('formName')">Ваше Имя</label>
+                                    <input type="text" required x-model="form.name" class="w-full bg-archDark border border-archBorderDark p-3 text-xs text-stone-200 focus:border-archGold outline-none">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[11px] font-bold uppercase tracking-wider text-stone-300" x-text="t('formPhone')">Телефон / Мессенджер</label>
+                                    <input type="text" required x-model="form.phone" class="w-full bg-archDark border border-archBorderDark p-3 text-xs text-stone-200 focus:border-archGold outline-none">
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-bold uppercase tracking-wider text-stone-300" x-text="t('formEmail')">Email</label>
+                                <input type="email" x-model="form.email" class="w-full bg-archDark border border-archBorderDark p-3 text-xs text-stone-200 focus:border-archGold outline-none">
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-bold uppercase tracking-wider text-stone-300" x-text="t('formMessage')">Детали проекта или вопросы</label>
+                                <textarea rows="4" x-model="form.message" class="w-full bg-archDark border border-archBorderDark p-3 text-xs text-stone-200 focus:border-archGold outline-none"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full py-4 bg-archGold text-archDark font-bold text-xs uppercase tracking-[0.2em] hover:bg-archGoldHover transition-colors flex items-center justify-center space-x-2">
+                                <span x-text="t('formSubmit')">Отправить Заявку</span>
+                                <i class="fa-solid fa-paper-plane text-xs"></i>
+                            </button>
+
+                            <div x-show="formSubmitted" class="p-3 bg-emerald-900/40 border border-emerald-500 text-emerald-300 text-xs text-center">
+                                <span x-text="t('formSuccess')">Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.</span>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="py-12 border-t border-archBorderDark bg-archDark text-stone-500 text-xs">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-2">
+                    <span class="font-cinzel text-archGold font-bold">RAHYMBERDI</span>
+                    <span>&copy; 2026. All rights reserved.</span>
+                </div>
+                <div class="flex space-x-6 text-stone-400">
+                    <a href="mailto:charyyevrahymberdi@gmail.com" class="hover:text-archGold">Email</a>
+                    <a href="tel:+99362457770" class="hover:text-archGold">Phone</a>
+                </div>
+            </div>
+        </footer>
+
+        <!-- MODAL FOR PORTFOLIO ITEM -->
+        <div x-show="modalOpen" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" style="display: none;">
+            <div @click.away="modalOpen = false" class="bg-archCardDark border border-archBorderDark max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 space-y-6 relative">
+                <button @click="modalOpen = false" class="absolute top-4 right-4 text-stone-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+
+                <template x-if="selectedItem">
+                    <div class="space-y-6">
+                        <img :src="selectedItem.image" :alt="selectedItem.title[lang]" class="w-full h-80 object-cover border border-archBorderDark">
+                        
+                        <div class="space-y-2">
+                            <div class="flex items-center space-x-4 text-xs font-mono text-archGold">
+                                <span x-text="selectedItem.category[lang]"></span>
+                                <span>•</span>
+                                <span x-text="selectedItem.location[lang]"></span>
+                                <span>•</span>
+                                <span x-text="selectedItem.area + ' ' + t('sqm')"></span>
+                            </div>
+                            <h3 class="font-cinzel text-2xl font-bold text-white" x-text="selectedItem.title[lang]"></h3>
+                            <p class="text-stone-300 text-sm leading-relaxed" x-text="selectedItem.description[lang]"></p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- APP LOGIC -->
+    <script>
+        function archStudioApp() {
+            return {
+                lang: 'ru',
+                darkMode: true,
+                blueprintMode: false,
+                mobileMenuOpen: false,
+                modalOpen: false,
+                selectedItem: null,
+                activeCategory: 'All',
+                calcArea: 250,
+                calcPackage: 'full',
+                formSubmitted: false,
+                form: { name: '', phone: '', email: '', message: '' },
+
+                translations: {
+                    ru: {
+                        studioTag: 'Архитектор & Пространственный Дизайнер',
+                        navAbout: 'О студии',
+                        navPortfolio: 'Проекты',
+                        navServices: 'Услуги',
+                        navCalculator: 'Расчет стоимости',
+                        navContact: 'Контакты',
+                        heroBadge: 'Архитектура & Дизайн Пространств',
+                        heroTitle: 'Проектируем Монументальную Эстетику & Чистый Уют',
+                        heroSubtitle: 'Создание премиальной жилой и коммерческой архитектуры, индивидуальных вилл и вневременных интерьеров. От концепта и 3D-визуализации до реализации с авторским надзором.',
+                        btnPortfolio: 'Смотреть Портфолио',
+                        btnDiscuss: 'Обсудить Проект',
+                        heroStats: [
+                            { value: '8+', label: 'Лет опыта' },
+                            { value: '45+', label: 'Реализованных объектов' },
+                            { value: '100%', label: 'Авторский контроль' },
+                            { value: '12', label: 'Наград & Публикаций' }
+                        ],
+                        architectName: 'Рахымберди Чарыев',
+                        architectRole: 'Главный Архитектор & Основатель Студии',
+                        aboutLabel: 'Архитектурный Подход',
+                        aboutHeading: 'Синтез геометрии, естественного света и натуральных материалов',
+                        aboutDesc: 'Мы верим, что архитектура должна органично взаимодействовать с окружающей средой, отражая характер и статус владельца. Каждое пространственное решение основывается на пропорциях, эргономике и чистоте линий.',
+                        aboutPillars: [
+                            { title: 'Эргономика и Свет', desc: 'Максимальное использование естественного освещения и продуманная логистика.' },
+                            { title: 'Натуральные Текстуры', desc: 'Использование камня, дерева, бетона и металлов высшего качества.' }
+                        ],
+                        aboutQuote: 'Архитектура — это искусство материализации эмоций и создания пространств, выдерживающих испытание временем.',
+                        portfolioTag: 'Архитектурное Портфолио',
+                        portfolioHeading: 'Избранные Реализованные Объекты',
+                        portfolioSub: 'Виллы, резиденции, премиальные квартиры и коммерческие пространства.',
+                        sqm: 'м²',
+                        btnDetails: 'Детали Проекта',
+                        servicesTag: 'Наши Компетенции',
+                        servicesHeading: 'Полный Цикл Архитектурного Проектирования',
+                        serviceItems: [
+                            { icon: 'fa-solid fa-house', title: 'Архитектурное проектирование', desc: 'Разработка концепции, эскизов, объемно-планировочных решений и рабочих чертежей вилл.', price: 'от $35 / м²' },
+                            { icon: 'fa-solid fa-couch', title: 'Дизайн Интерьеров', desc: 'Создание эксклюзивных интерьеров с подбором отделочных материалов, мебели и освещения.', price: 'от $30 / м²' },
+                            { icon: 'fa-solid fa-vr-cardboard', title: '3D Визуализация & VR Walkthrough', desc: 'Фотореалистичные 3D-рендеры и интерактивные VR-туры для полного погружения в объект.', price: 'Включено в проект' },
+                            { icon: 'fa-solid fa-clipboard-check', title: 'Авторский Надзор', desc: 'Регулярный выезд на объект, контроль соответствия строительных работ проекту.', price: 'от $500 / мес' }
+                        ],
+                        calcTag: 'Онлайн Расчет',
+                        calcHeading: 'Калькулятор Архитектурного Бюджета',
+                        calcSub: 'Рассчитайте примерную стоимость и сроки разработки вашего объекта.',
+                        calcAreaLabel: 'Площадь объекта:',
+                        calcPackageLabel: 'Уровень проектирования:',
+                        pkgArch: 'Архитектурное решение (Эскизный проект)',
+                        pkgInt: 'Дизайн-проект интерьера',
+                        pkgFull: 'Комплексный проект (Архитектура + Интерьер)',
+                        calcEstCost: 'Предварительная стоимость',
+                        calcNote: '*Окончательная смета формируется после ТЗ',
+                        calcBtnOrder: 'Заказать точный расчет',
+                        contactTag: 'Связаться с нами',
+                        contactHeading: 'Обсудим ваш будущий объект',
+                        contactDesc: 'Готовы воплотить архитектурные идеи любой сложности. Запишитесь на консультацию или отправьте техническое задание.',
+                        emailLabel: 'Электронная почта',
+                        phoneLabel: 'Телефон / WhatsApp / Telegram',
+                        locLabel: 'Локация',
+                        formName: 'Ваше Имя',
+                        formPhone: 'Телефон / Мессенджер',
+                        formEmail: 'Email',
+                        formMessage: 'Детали проекта или вопросы',
+                        formSubmit: 'Отправить Заявку',
+                        formSuccess: 'Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.'
+                    },
+                    en: {
+                        studioTag: 'Architect & Spatial Designer',
+                        navAbout: 'About',
+                        navPortfolio: 'Projects',
+                        navServices: 'Services',
+                        navCalculator: 'Calculator',
+                        navContact: 'Contact',
+                        heroBadge: 'Architecture & Spatial Design',
+                        heroTitle: 'Designing Architectural Elegance & Pure Comfort',
+                        heroSubtitle: 'Creating premium residential and commercial architecture, bespoke luxury villas, and timeless interior spaces. From initial layout concept to site supervision.',
+                        btnPortfolio: 'View Portfolio',
+                        btnDiscuss: 'Discuss Project',
+                        heroStats: [
+                            { value: '8+', label: 'Years Experience' },
+                            { value: '45+', label: 'Completed Projects' },
+                            { value: '100%', label: 'Author Supervision' },
+                            { value: '12', label: 'Awards & Publications' }
+                        ],
+                        architectName: 'Rahymberdi Charyyev',
+                        architectRole: 'Lead Architect & Studio Founder',
+                        aboutLabel: 'Architectural Philosophy',
+                        aboutHeading: 'Synthesis of Geometry, Natural Light & Raw Materials',
+                        aboutDesc: 'We believe architecture should naturally interact with its context, echoing the character and prestige of its owner. Every spatial decision is built on proportion, ergonomics, and clean aesthetics.',
+                        aboutPillars: [
+                            { title: 'Ergonomics & Daylight', desc: 'Maximized natural daylighting paired with functional internal flow.' },
+                            { title: 'Tactile Materials', desc: 'Curated natural stone, solid timber, textured concrete, and refined metals.' }
+                        ],
+                        aboutQuote: 'Architecture is the art of materializing emotion and crafting spaces that withstand the test of time.',
+                        portfolioTag: 'Architectural Portfolio',
+                        portfolioHeading: 'Featured Selected Works',
+                        portfolioSub: 'Villas, private residences, luxury apartments, and commercial venues.',
+                        sqm: 'sq.m',
+                        btnDetails: 'Project Details',
+                        servicesTag: 'Our Competencies',
+                        servicesHeading: 'Full-Cycle Architectural & Design Services',
+                        serviceItems: [
+                            { icon: 'fa-solid fa-house', title: 'Architectural Design', desc: 'Concept development, spatial planning, facade design, and detailed construction documentation.', price: 'from $35 / sq.m' },
+                            { icon: 'fa-solid fa-couch', title: 'Interior Architecture', desc: 'Bespoke interior design including material specifications, custom furniture, and lighting design.', price: 'from $30 / sq.m' },
+                            { icon: 'fa-solid fa-vr-cardboard', title: '3D Renderings & VR Walkthrough', desc: 'Photorealistic 3D imagery and interactive VR walkthroughs to visualize spaces prior to construction.', price: 'Included in project' },
+                            { icon: 'fa-solid fa-clipboard-check', title: 'Site Supervision', desc: 'Regular site visits and quality assurance to ensure full compliance with design blueprints.', price: 'from $500 / mo' }
+                        ],
+                        calcTag: 'Online Estimator',
+                        calcHeading: 'Architectural Budget Calculator',
+                        calcSub: 'Estimate project development costs and timelines instantly.',
+                        calcAreaLabel: 'Project Area:',
+                        calcPackageLabel: 'Scope of Service:',
+                        pkgArch: 'Architectural Concept & Blueprint',
+                        pkgInt: 'Interior Design Package',
+                        pkgFull: 'Complete Architectural & Interior Package',
+                        calcEstCost: 'Estimated Budget',
+                        calcNote: '*Final quote provided after formal design brief',
+                        calcBtnOrder: 'Request Detailed Proposal',
+                        contactTag: 'Get in Touch',
+                        contactHeading: 'Let\'s Discuss Your Project',
+                        contactDesc: 'Ready to turn your architectural vision into reality. Book a meeting or share your initial project requirements.',
+                        emailLabel: 'Email Address',
+                        phoneLabel: 'Phone / WhatsApp / Telegram',
+                        locLabel: 'Location',
+                        formName: 'Your Name',
+                        formPhone: 'Phone / Messaging App',
+                        formEmail: 'Email Address',
+                        formMessage: 'Project Details / Requirements',
+                        formSubmit: 'Submit Request',
+                        formSuccess: 'Thank you! Your request has been sent. We will get back to you shortly.'
+                    }
+                },
+
+                portfolioItems: [
+                    {
+                        title: { ru: 'Резиденция "Минимализм & Камень"', en: 'Minimalist Stone Residence' },
+                        category: { ru: 'Виллы', en: 'Villas' },
+                        categoryKey: 'Villas',
+                        location: { ru: 'Ашхабад', en: 'Ashgabat' },
+                        area: 680,
+                        year: '2025',
+                        image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1000&q=80',
+                        description: { 
+                            ru: 'Загородная вилла с панорамным остеклением, монолитным бетоном и натуральным травертином. Открытые пространства интегрированы с природным ландшафтом.',
+                            en: 'Private villa featuring panoramic glazing, monolithic concrete, and natural travertine finish. Open layout seamlessly connects interior spaces with the outdoor landscape.'
+                        }
+                    },
+                    {
+                        title: { ru: 'Пентхаус "Эбеновое Дерево"', en: 'Ebony Wood Penthouse' },
+                        category: { ru: 'Интерьеры', en: 'Interiors' },
+                        categoryKey: 'Interiors',
+                        location: { ru: 'Центр', en: 'Downtown' },
+                        area: 310,
+                        year: '2024',
+                        image: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1000&q=80',
+                        description: { 
+                            ru: 'Премиальный интерьер пентхауса с акцентом на тёмное дерево, скрытую подсвеченную геометрию и дизайнерскую авторскую мебель.',
+                            en: 'Luxury penthouse interior utilizing dark wood accents, integrated architectural lighting, and custom-designed furniture.'
+                        }
+                    },
+                    {
+                        title: { ru: 'Коммерческий Комплекс "Horizon"', en: 'Horizon Commercial Hub' },
+                        category: { ru: 'Коммерция', en: 'Commercial' },
+                        categoryKey: 'Commercial',
+                        location: { ru: 'Деловой Центр', en: 'Business Center' },
+                        area: 1450,
+                        year: '2025',
+                        image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80',
+                        description: { 
+                            ru: 'Современный коммерческий центр с кинетическим фасадом, энергоэффективными инженерными решениями и атриумом со световым фонарем.',
+                            en: 'Modern commercial building featuring kinetic facade design, high energy efficiency standards, and a central sunlit atrium.'
+                        }
+                    }
+                ],
+
+                get portfolioCategories() {
+                    return ['All', 'Villas', 'Interiors', 'Commercial'];
+                },
+
+                get filteredPortfolio() {
+                    if (this.activeCategory === 'All') return this.portfolioItems;
+                    return this.portfolioItems.filter(item => item.categoryKey === this.activeCategory);
+                },
+
+                get calculatedPrice() {
+                    let rate = 35;
+                    if (this.calcPackage === 'interior') rate = 30;
+                    if (this.calcPackage === 'full') rate = 55;
+                    return (this.calcArea * rate).toLocaleString();
+                },
+
+                t(key) {
+                    return this.translations[this.lang][key] || key;
+                },
+
+                getCategoryLabel(cat) {
+                    if (cat === 'All') return this.lang === 'ru' ? 'Все Проекты' : 'All Projects';
+                    if (cat === 'Villas') return this.lang === 'ru' ? 'Виллы' : 'Villas';
+                    if (cat === 'Interiors') return this.lang === 'ru' ? 'Интерьеры' : 'Interiors';
+                    if (cat === 'Commercial') return this.lang === 'ru' ? 'Коммерция' : 'Commercial';
+                    return cat;
+                },
+
+                openModal(item) {
+                    this.selectedItem = item;
+                    this.modalOpen = true;
+                },
+
+                submitForm() {
+                    this.formSubmitted = true;
+                    setTimeout(() => {
+                        this.form = { name: '', phone: '', email: '', message: '' };
+                        this.formSubmitted = false;
+                    }, 4000);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
