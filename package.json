@@ -1,0 +1,24 @@
+{
+  "name": "rahymberdi-portfolio",
+  "version": "1.0.0",
+  "description": "Premium architectural portfolio website for Rahymberdi Charyyev",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "python -m http.server 8000"
+  },
+  "keywords": [
+    "architecture",
+    "portfolio",
+    "interior-design",
+    "villa-design",
+    "turkmenistan",
+    "ashgabat"
+  ],
+  "author": "Rahymberdi Charyyev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/rahymberdi-portfolio.git"
+  }
+}
