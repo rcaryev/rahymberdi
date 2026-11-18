@@ -183,22 +183,11 @@ colors: {
 
 ### Подключение формы обратной связи
 
-Для работы контактной формы добавьте один из сервисов:
+Форма отправляет заявки через [Formspree](https://formspree.io) (fetch + JSON) с обработкой ошибок, индикатором отправки и защитой от спам-ботов (honeypot).
 
-**1. Formspree** (Бесплатно)
-```html
-<form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-```
-
-**2. Netlify Forms** (Если используете Netlify)
-```html
-<form netlify>
-```
-
-**3. Web3Forms** (Бесплатно)
-```html
-<form action="https://api.web3forms.com/submit" method="POST">
-    <input type="hidden" name="access_key" value="YOUR_KEY">
+Настройка: создайте форму на formspree.io и замените в начале `app.js`:
+```js
+const FORM_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
 ```
 
 ### Google Analytics

@@ -155,15 +155,14 @@ image: 'https://your-domain.com/images/project1.jpg'
 ```
 
 ### 3. Подключите форму обратной связи
-Рекомендую **Formspree** (бесплатно, 50 сообщений/месяц):
+Форма уже отправляет заявки через **Formspree** (бесплатно, 50 заявок/месяц). Осталось указать ID формы:
 
-1. Зарегистрируйтесь на [formspree.io](https://formspree.io)
-2. Создайте форму, получите endpoint
-3. В `index.html` найдите `<form @submit.prevent="submitForm()"`
-4. Замените на:
-```html
-<form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-```
+1. Зарегистрируйтесь на [formspree.io](https://formspree.io) и создайте форму (New Form)
+2. Скопируйте endpoint вида `https://formspree.io/f/abcdwxyz`
+3. В начале `app.js` замените `https://formspree.io/f/YOUR_FORM_ID` на свой endpoint
+4. Отправьте тестовую заявку с сайта и подтвердите email в письме от Formspree
+
+Пока ID не указан, форма показывает посетителю сообщение «Форма временно недоступна».
 
 ### 4. Добавьте Google Analytics
 В `index.html` перед `</head>` добавьте:
