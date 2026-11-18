@@ -1,5 +1,5 @@
 // Formspree endpoint: https://formspree.io → New Form → скопируйте URL вида https://formspree.io/f/xxxxxxxx
-const FORM_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
+const FORM_ENDPOINT = 'https://formspree.io/f/mzerrqgn';
 const FORM_TIMEOUT_MS = 15000;
 
 function archStudioApp() {
