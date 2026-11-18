@@ -57,6 +57,7 @@
     </script>
 
     <style>
+        [x-cloak] { display: none !important; }
         body {
             font-family: 'Inter', sans-serif;
             transition: background-color 0.3s, color 0.3s;
@@ -486,13 +487,23 @@
                                 <textarea rows="4" x-model="form.message" class="w-full bg-archDark border border-archBorderDark p-3 text-xs text-stone-200 focus:border-archGold outline-none"></textarea>
                             </div>
 
-                            <button type="submit" class="w-full py-4 bg-archGold text-archDark font-bold text-xs uppercase tracking-[0.2em] hover:bg-archGoldHover transition-colors flex items-center justify-center space-x-2">
-                                <span x-text="t('formSubmit')">Отправить Заявку</span>
-                                <i class="fa-solid fa-paper-plane text-xs"></i>
+                            <!-- Honeypot against spam bots: hidden from people -->
+                            <div class="hidden" aria-hidden="true">
+                                <label>Leave this field empty <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" x-model="form._gotcha"></label>
+                            </div>
+
+                            <button type="submit" :disabled="formStatus === 'sending'" :aria-busy="formStatus === 'sending'" class="w-full py-4 bg-archGold text-archDark font-bold text-xs uppercase tracking-[0.2em] hover:bg-archGoldHover transition-colors flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-wait">
+                                <span x-text="formStatus === 'sending' ? t('formSending') : t('formSubmit')">Отправить Заявку</span>
+                                <i class="fa-solid text-xs" :class="formStatus === 'sending' ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
                             </button>
 
-                            <div x-show="formSubmitted" class="p-3 bg-emerald-900/40 border border-emerald-500 text-emerald-300 text-xs text-center">
-                                <span x-text="t('formSuccess')">Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.</span>
+                            <div aria-live="polite">
+                                <div x-show="formStatus === 'success'" x-cloak class="p-3 bg-emerald-900/40 border border-emerald-500 text-emerald-300 text-xs text-center">
+                                    <span x-text="t('formSuccess')">Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.</span>
+                                </div>
+                                <div x-show="formStatus === 'error'" x-cloak role="alert" class="p-3 bg-rose-900/40 border border-rose-500 text-rose-300 text-xs text-center">
+                                    <span x-text="formError ? t(formError) : ''"></span>
+                                </div>
                             </div>
                         </form>
                     </div>

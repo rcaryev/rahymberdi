@@ -1,3 +1,7 @@
+// Formspree endpoint: https://formspree.io → New Form → скопируйте URL вида https://formspree.io/f/xxxxxxxx
+const FORM_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
+const FORM_TIMEOUT_MS = 15000;
+
 function archStudioApp() {
     return {
         lang: 'ru',
@@ -9,8 +13,9 @@ function archStudioApp() {
         activeCategory: 'All',
         calcArea: 250,
         calcPackage: 'full',
-        formSubmitted: false,
-        form: { name: '', phone: '', email: '', message: '' },
+        formStatus: 'idle', // idle | sending | success | error
+        formError: '',
+        form: { name: '', phone: '', email: '', message: '', _gotcha: '' },
 
         translations: {
             ru: {
@@ -76,7 +81,11 @@ function archStudioApp() {
                 formEmail: 'Email',
                 formMessage: 'Детали проекта или вопросы',
                 formSubmit: 'Отправить Заявку',
-                formSuccess: 'Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.'
+                formSuccess: 'Спасибо! Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.',
+                formSending: 'Отправка...',
+                formErrorNetwork: 'Не удалось отправить заявку. Проверьте подключение к интернету и попробуйте ещё раз.',
+                formErrorServer: 'Ошибка при отправке заявки. Попробуйте ещё раз или свяжитесь с нами по телефону.',
+                formErrorConfig: 'Форма временно недоступна. Пожалуйста, свяжитесь с нами по телефону или email.'
             },
             en: {
                 studioTag: 'Architect & Spatial Designer',
@@ -141,7 +150,11 @@ function archStudioApp() {
                 formEmail: 'Email Address',
                 formMessage: 'Project Details / Requirements',
                 formSubmit: 'Submit Request',
-                formSuccess: 'Thank you! Your request has been sent. We will get back to you shortly.'
+                formSuccess: 'Thank you! Your request has been sent. We will get back to you shortly.',
+                formSending: 'Sending...',
+                formErrorNetwork: 'Could not send your request. Please check your connection and try again.',
+                formErrorServer: 'Something went wrong while sending. Please try again or contact us by phone.',
+                formErrorConfig: 'The form is temporarily unavailable. Please contact us by phone or email.'
             }
         },
 
@@ -220,12 +233,67 @@ function archStudioApp() {
             this.modalOpen = true;
         },
 
-        submitForm() {
-            this.formSubmitted = true;
+        async submitForm() {
+            if (this.formStatus === 'sending') return;
+
+            // Honeypot: боты заполняют скрытое поле — тихо "принимаем" и ничего не шлём
+            if (this.form._gotcha) {
+                this.onFormSuccess();
+                return;
+            }
+
+            if (FORM_ENDPOINT.includes('YOUR_FORM_ID')) {
+                console.error('FORM_ENDPOINT is not configured in app.js');
+                this.formStatus = 'error';
+                this.formError = 'formErrorConfig';
+                return;
+            }
+
+            this.formStatus = 'sending';
+            this.formError = '';
+
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), FORM_TIMEOUT_MS);
+
+            try {
+                const response = await fetch(FORM_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: this.form.name.trim(),
+                        phone: this.form.phone.trim(),
+                        email: this.form.email.trim(),
+                        message: this.form.message.trim(),
+                        language: this.lang,
+                        _subject: `Новая заявка с сайта: ${this.form.name.trim()}`
+                    }),
+                    signal: controller.signal
+                });
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    console.error('Form submit failed', response.status, data);
+                    this.formStatus = 'error';
+                    this.formError = 'formErrorServer';
+                    return;
+                }
+
+                this.onFormSuccess();
+            } catch (err) {
+                console.error('Form submit error', err);
+                this.formStatus = 'error';
+                this.formError = 'formErrorNetwork';
+            } finally {
+                clearTimeout(timer);
+            }
+        },
+
+        onFormSuccess() {
+            this.formStatus = 'success';
+            this.form = { name: '', phone: '', email: '', message: '', _gotcha: '' };
             setTimeout(() => {
-                this.form = { name: '', phone: '', email: '', message: '' };
-                this.formSubmitted = false;
-            }, 4000);
+                if (this.formStatus === 'success') this.formStatus = 'idle';
+            }, 6000);
         }
     }
 }
